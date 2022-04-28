@@ -20,4 +20,8 @@ jobs:
 # Run Unit tests- Specify unit tests here
 
 # sam deploy
+<<<<<<< HEAD
       - run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --stack-name front-end --s3-bucket gnguyendo-cloud-resume-front-end-template --capabilities CAPABILITY_IAM --region us-east1
+=======
+      - run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --stack-name sam-backend --s3-bucket gnguyendo-cloud-resume-backend-template --capabilities CAPABILITY_IAM --region us-east-1
+>>>>>>> 27f24e748596c550346eb1bc47abaae86bbfe3ee
