@@ -11,31 +11,93 @@ Globals:
     Timeout: 3
 
 Resources:
-  HelloWorldFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+  TempLambdaFunction:
+    Type: AWS::Lambda::Function
     Properties:
-      CodeUri: main/
-      Handler: app.lambda_handler
+      Code:
+        S3Bucket: gnguyendo-cloud-resume-front-end-template
+        S3Key: !Ref LambdaFileName
+      FunctionName: TestLambdaFn
+      Handler: main/app.test_lambda
+      Role: !GetAtt TempLambdaRole.Arn
       Runtime: python3.8
-      Architectures:
-        - x86_64
-      Events:
-        HelloWorld:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-          Properties:
-            Path: /hello
-            Method: get
+      Environment:
+        Variables:
+          DataBaseName: !Ref WebPageDynamoDBTable
 
-Outputs:
-  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
-  # Find out more about other implicit resources you can reference within SAM
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  HelloWorldApi:
-    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  HelloWorldFunction:
-    Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt HelloWorldFunction.Arn
-  HelloWorldFunctionIamRole:
-    Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt HelloWorldFunctionRole.Arn
+  TempLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: TestLambdaRole
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaDynamoDBPermission
+          PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                  - Effect: Allow
+                    Action: "dynamodb:UpdateItem"
+                    Resource: !GetAtt WebPageDynamoDBTable.Arn
+
+  WebPageDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        -
+          AttributeName: Date
+          AttributeType: S
+      KeySchema:
+        -
+          AttributeName: Date
+          KeyType: HASH
+
+  RestAPIGateWay:
+      Type: AWS::ApiGateway::RestApi
+      Properties:
+        EndpointConfiguration:
+          Types:
+            - EDGE
+        Name: !Ref TempAPIGateWay
+
+  RestAPIGatewayProxyMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref RestAPIGateWay
+      ResourceId: !Ref RestAPIGatewayProxyResource
+      HttpMethod: ANY
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub >-
+          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TempLambdaFunction.Arn}/invocations
+  RestAPIGatewayProxyResource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      RestApiId: !Ref RestAPIGateWay
+      ParentId: !GetAtt
+        - RestAPIGateWay
+        - RootResourceId
+      PathPart: '{proxy+}'
+
+  RestAPIDeployment:
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      Description: String
+      RestApiId: !Ref RestAPIGateWay
+      StageName: Prod
+
+  ApiPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: "lambda:InvokeFunction"
+      FunctionName: !GetAtt TempLambdaFunction.Arn
+      Principal: "apigateway.amazonaws.com"
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestAPIGateWay}/*

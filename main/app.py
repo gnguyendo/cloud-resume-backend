@@ -1,42 +1,35 @@
+import boto3
 import json
+import os
+from datetime import date
 
-# import requests
+client = boto3.client("dynamodb")
+web_page_counter = os.environ.get('DataBaseName')
+curr_date = date.today().strftime("%m/%d/%y")
 
 
-def lambda_handler(event, context):
-    """Sample pure Lambda function
+def test_lambda(event, context):
+    response_body = client.update_item(
+        TableName=web_page_counter,
+        Key={"Date": {"S": curr_date}},
+        UpdateExpression="ADD total_views :view",
+        ExpressionAttributeValues={":view": {"N": "1"}},
+        ReturnValues="ALL_NEW"
+    )
 
-    Parameters
-    ----------
-    event: dict, required
-        API Gateway Lambda Proxy Input Format
+    res = response_body["Attributes"]["total_views"]["N"]
 
-        Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
-
-    context: object, required
-        Lambda Context runtime methods and attributes
-
-        Context doc: https://docs.aws.amazon.com/lambda/latest/dg/python-context-object.html
-
-    Returns
-    ------
-    API Gateway Lambda Proxy Output Format: dict
-
-        Return doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
-    """
-
-    # try:
-    #     ip = requests.get("http://checkip.amazonaws.com/")
-    # except requests.RequestException as e:
-    #     # Send some context about this error to Lambda Logs
-    #     print(e)
-
-    #     raise e
-
-    return {
-        "statusCode": 200,
-        "body": json.dumps({
-            "message": "testing",
-            # "location": ip.text.replace("\n", "")
-        }),
-    }
+    response = \
+        {
+            "isBase64Encoded": True,
+            "statusCode": 200,
+            "headers":
+                {
+                    'Access-Control-Allow-Headers': "Content-Type",
+                    'Access-Control-Allow-Origin': "https://www.geoffreynguyendo-resume.com",
+                    'Access-Control-Allow-Methods': 'OPTIONS,POST,GET'
+                },
+            # "multiValueHeaders": {},
+            "body": json.dumps(res, indent=1)
+        }
+    return response
