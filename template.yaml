@@ -20,52 +20,52 @@ Parameters:
     Type: String
 
 Resources:
-  TempLambdaFunction:
-    Type: AWS::Lambda::Function
-    Properties:
-      Code:
-        S3Bucket: gnguyendo-cloud-resume-backend-template
-        S3Key: !Ref LambdaFileName
-      FunctionName: TestLambdaFn
-      Handler: main/app.test_lambda
-      Role: !GetAtt TempLambdaRole.Arn
-      Runtime: python3.8
-      Environment:
-        Variables:
-          DataBaseName: !Ref WebPageDynamoDBTable
-
-  TempLambdaRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: TestLambdaRole
-      AssumeRolePolicyDocument:
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Action:
-              - sts:AssumeRole
-      Policies:
-        - PolicyName: LambdaDynamoDBPermission
-          PolicyDocument:
-              Version: "2012-10-17"
-              Statement:
-                  - Effect: Allow
-                    Action: "dynamodb:UpdateItem"
-                    Resource: !GetAtt WebPageDynamoDBTable.Arn
-
-  WebPageDynamoDBTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        -
-          AttributeName: Date
-          AttributeType: S
-      KeySchema:
-        -
-          AttributeName: Date
-          KeyType: HASH
+#  TempLambdaFunction:
+#    Type: AWS::Lambda::Function
+#    Properties:
+#      Code:
+#        S3Bucket: gnguyendo-cloud-resume-backend-template
+#        S3Key: !Ref LambdaFileName
+#      FunctionName: TestLambdaFn
+#      Handler: main/app.test_lambda
+#      Role: !GetAtt TempLambdaRole.Arn
+#      Runtime: python3.8
+#      Environment:
+#        Variables:
+#          DataBaseName: !Ref WebPageDynamoDBTable
+#
+#  TempLambdaRole:
+#    Type: AWS::IAM::Role
+#    Properties:
+#      RoleName: TestLambdaRole
+#      AssumeRolePolicyDocument:
+#        Statement:
+#          - Effect: Allow
+#            Principal:
+#              Service: lambda.amazonaws.com
+#            Action:
+#              - sts:AssumeRole
+#      Policies:
+#        - PolicyName: LambdaDynamoDBPermission
+#          PolicyDocument:
+#              Version: "2012-10-17"
+#              Statement:
+#                  - Effect: Allow
+#                    Action: "dynamodb:UpdateItem"
+#                    Resource: !GetAtt WebPageDynamoDBTable.Arn
+#
+#  WebPageDynamoDBTable:
+#    Type: AWS::DynamoDB::Table
+#    Properties:
+#      BillingMode: PAY_PER_REQUEST
+#      AttributeDefinitions:
+#        -
+#          AttributeName: Date
+#          AttributeType: S
+#      KeySchema:
+#        -
+#          AttributeName: Date
+#          KeyType: HASH
 
 #  RestAPIGateWay:
 #      Type: AWS::ApiGateway::RestApi
