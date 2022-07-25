@@ -3,6 +3,25 @@ on:
     branches:
       - main
 jobs:
+  upload_lambda_function:
+    runs-on: ubuntu-latest
+    outputs:
+      date_time: ${{steps.date-time.outputs.file_name}}
+    steps:
+      - uses: actions/checkout@v3
+      - name: lambda zip package and update
+        run: |
+          temp_file_name="$(date +'%m-%d-%Y_%H-%M'.zip)"
+          echo "$temp_file_name"
+          echo "::set-output name=file_name::$temp_file_name"
+        id: date-time
+      - run: zip -r ${{steps.date-time.outputs.file_name}}  main
+      - run: aws s3 cp ${{steps.date-time.outputs.file_name}} s3://gnguyendo-cloud-resume-front-end-template
+        env:
+          AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+          AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+          AWS_DEFAULT_REGION: 'us-east-1'
+
   build-deploy:
     runs-on: ubuntu-latest
     steps:
@@ -20,4 +39,4 @@ jobs:
 # Run Unit tests- Specify unit tests here
 
 # sam deploy
-      - run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --stack-name sam-backend --s3-bucket gnguyendo-cloud-resume-backend-template --capabilities CAPABILITY_IAM --region us-east-1 --parameter-overrides ParameterKey=LambdaFileName,ParameterValue=${{needs.upload_lambda_function.outputs.date_time}}
+      - run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --stack-name sam-backend --s3-bucket gnguyendo-cloud-resume-backend-template --capabilities CAPABILITY_NAMED_IAM --region us-east-1 --parameter-overrides ParameterKey=LambdaFileName,ParameterValue=${{needs.upload_lambda_function.outputs.date_time}}
