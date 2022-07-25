@@ -67,46 +67,47 @@ Resources:
           AttributeName: Date
           KeyType: HASH
 
-  RestAPIGateWay:
-      Type: AWS::ApiGateway::RestApi
-      Properties:
-        EndpointConfiguration:
-          Types:
-            - EDGE
-        Name: !Ref TempAPIGateWay
-
-  RestAPIGatewayProxyMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      RestApiId: !Ref RestAPIGateWay
-      ResourceId: !Ref RestAPIGatewayProxyResource
-      HttpMethod: ANY
-      AuthorizationType: NONE
-      Integration:
-        Type: AWS_PROXY
-        IntegrationHttpMethod: POST
-        Uri: !Sub >-
-          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TempLambdaFunction.Arn}/invocations
-  RestAPIGatewayProxyResource:
-    Type: 'AWS::ApiGateway::Resource'
-    Properties:
-      RestApiId: !Ref RestAPIGateWay
-      ParentId: !GetAtt
-        - RestAPIGateWay
-        - RootResourceId
-      PathPart: '{proxy+}'
-
-  RestAPIDeployment:
-    Type: AWS::ApiGateway::Deployment
-    Properties:
-      Description: String
-      RestApiId: !Ref RestAPIGateWay
-      StageName: Prod
-
-  ApiPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: "lambda:InvokeFunction"
-      FunctionName: !GetAtt TempLambdaFunction.Arn
-      Principal: "apigateway.amazonaws.com"
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestAPIGateWay}/*
+#  RestAPIGateWay:
+#      Type: AWS::ApiGateway::RestApi
+#      Properties:
+#        EndpointConfiguration:
+#          Types:
+#            - EDGE
+#        Name: !Ref TempAPIGateWay
+#
+#  RestAPIGatewayProxyMethod:
+#    Type: AWS::ApiGateway::Method
+#    Properties:
+#      RestApiId: !Ref RestAPIGateWay
+#      ResourceId: !Ref RestAPIGatewayProxyResource
+#      HttpMethod: ANY
+#      AuthorizationType: NONE
+#      Integration:
+#        Type: AWS_PROXY
+#        IntegrationHttpMethod: POST
+#        Uri: !Sub >-
+#          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TempLambdaFunction.Arn}/invocations
+#
+#  RestAPIGatewayProxyResource:
+#    Type: 'AWS::ApiGateway::Resource'
+#    Properties:
+#      RestApiId: !Ref RestAPIGateWay
+#      ParentId: !GetAtt
+#        - RestAPIGateWay
+#        - RootResourceId
+#      PathPart: '{proxy+}'
+#
+#  RestAPIDeployment:
+#    Type: AWS::ApiGateway::Deployment
+#    Properties:
+#      Description: String
+#      RestApiId: !Ref RestAPIGateWay
+#      StageName: Prod
+#
+#  ApiPermission:
+#    Type: AWS::Lambda::Permission
+#    Properties:
+#      Action: "lambda:InvokeFunction"
+#      FunctionName: !GetAtt TempLambdaFunction.Arn
+#      Principal: "apigateway.amazonaws.com"
+#      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestAPIGateWay}/*
