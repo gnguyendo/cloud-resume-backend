@@ -28,7 +28,7 @@ Resources:
         S3Key: !Ref LambdaFileName
       FunctionName: DynamoDBLambdaFN
       Handler: main/app.test_lambda
-      Role: !GetAtt TempLambdaRole.Arn
+      Role: !GetAtt LambdaRole.Arn
       Runtime: python3.8
       Environment:
         Variables:
