@@ -16,8 +16,16 @@ def test_lambda(event, context):
         ExpressionAttributeValues={":view": {"N": "1"}},
         ReturnValues="ALL_NEW"
     )
-
     res = response_body["Attributes"]["total_views"]["N"]
+
+    # response_body = client.update_item(
+    #     TableName=web_page_counter,
+    #     Key={"Main_key": "Views"},
+    #     UpdateExpression="ADD Visits :view",
+    #     ExpressionAttributeValues={":view": 1},
+    #     ReturnValues="ALL_NEW"
+    # )
+    # res = response_body["Attributes"]["Visits"]
 
     response = \
         {
@@ -29,7 +37,6 @@ def test_lambda(event, context):
                     'Access-Control-Allow-Origin': "https://www.geoffreynguyendo-resume.com",
                     'Access-Control-Allow-Methods': 'OPTIONS,POST,GET'
                 },
-            # "multiValueHeaders": {},
             "body": json.dumps(res, indent=1)
         }
     return response
